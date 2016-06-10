@@ -2,12 +2,14 @@
 #include <iostream>
 #include <stdlib.h>
 
+#define SHOW_PERCENT
 #define	IMG_WIDTH	1280	
 #define	IMG_HEIGHT	720
 #define	START_NUM	4030
 #define END_NUM		25320
 #define INTERVAL	10
 #define TOTAL_NUM	((END_NUM - START_NUM)/INTERVAL + 1)
+#define IMAGE_TYPE	CV_64FC3	//CV_32FC3
 
 using namespace cv;
 using namespace std;
@@ -30,8 +32,8 @@ int main(int argc, char** argv) {
 
 	int ii, kk;
 	char filename[20];
-	Mat avIM = Mat::zeros(IMG_HEIGHT, IMG_WIDTH, CV_64FC3),		//max of CV_64FC3=2,147,483,647
-		stdIM = Mat::zeros(IMG_HEIGHT, IMG_WIDTH, CV_64FC3),	//2147483647 / 127 = 16,909,320 pics (that's enough)
+	Mat avIM = Mat::zeros(IMG_HEIGHT, IMG_WIDTH, IMAGE_TYPE),		//max of CV_64FC3=2,147,483,647
+		stdIM = Mat::zeros(IMG_HEIGHT, IMG_WIDTH, IMAGE_TYPE),	//2147483647 / 127 = 16,909,320 pics (that's enough)
 		tempIM ;												//result is the same while using CV_64FC3 or CV_64FC3 (long/double)
 	
 	/*Compute Average Image*/	
@@ -44,27 +46,23 @@ int main(int argc, char** argv) {
 		string fullname = argv[1];
 		sprintf(filename, "\\%d.png", ii);
 		fullname.append(filename);
-		//cout << fullname << endl;
 		
 		tempIM = imread(fullname.c_str());
 		if (tempIM.empty()) { cout << "Can't open image!\n"; return -1; }
-		tempIM.convertTo(tempIM, CV_64FC3);			//convert to the same type as result Mat for adding
-		//cout << tempIM << endl;
+		tempIM.convertTo(tempIM, IMAGE_TYPE);			//convert to the same type as result Mat for adding
 
 		avIM += tempIM;
 		++kk;
 
-		percentage = (double)kk / (double)totalnum;
-		printf("\b\b\b\b\b\b%5.1f%%", percentage* 100.0);
+#ifdef SHOW_PERCENT
+		percentage = (double)kk * 100.0 / totalnum;
+		printf("\b\b\b\b\b\b%5.1f%%", percentage);
+#endif
 
-		//if (0 == (kk % 100)) {			//print a dot every 100 images
-		//	cout << '.';
-		//}
 	}
 	avIM = avIM * (double)(1.0 / kk);		//multiply (1 / total number of images)
 
 	t = ((double)getTickCount() - t) / getTickFrequency();
-
 	cout << ".......Done!" << endl;
 	cout << "Elapsed time for computing average image: ";
 	printf("%.2f s\n\n", t);
@@ -83,7 +81,7 @@ int main(int argc, char** argv) {
 
 		tempIM = imread(fullname.c_str());
 		if (tempIM.empty()) { cout << "Can't open image!\n"; return -1; }
-		tempIM.convertTo(tempIM, CV_64FC3);			//convert to the same type as result Mat for adding
+		tempIM.convertTo(tempIM, IMAGE_TYPE);			//convert to the same type as result Mat for adding
 		//cout << tempIM << endl;
 
 		tempIM = tempIM - avIM;
@@ -92,12 +90,11 @@ int main(int argc, char** argv) {
 		stdIM += tempIM;
 		++kk;
 
-		percentage = (double)kk / (double)totalnum;
-		printf("\b\b\b\b\b\b%5.1f%%", percentage * 100.0);
+#ifdef SHOW_PERCENT
+		percentage = (double)kk * 100.0 / totalnum;
+		printf("\b\b\b\b\b\b%5.1f%%", percentage);
+#endif
 
-		//if (0 == (kk % 100)) {			//print a dot every 100 images
-		//	cout << '.';
-		//}
 	}
 	
 	stdIM = stdIM * (double)(1.0 / (kk - 1));
@@ -105,7 +102,6 @@ int main(int argc, char** argv) {
 	stdIM = stdIM + Scalar(0.5, 0.5, 0.5);		//round function
 
 	t = ((double)getTickCount() - t) / getTickFrequency();
-
 	cout << ".......Done!" << endl;
 	cout << "Elapsed time for computing standard deviation image: ";
 	printf("%.2f s\n", t);
@@ -120,7 +116,6 @@ int main(int argc, char** argv) {
 
 	string savename = argv[2];
 	imwrite(savename.c_str(), avIM);
-
 	savename = argv[3];
 	imwrite(savename.c_str(), stdIM);
 
