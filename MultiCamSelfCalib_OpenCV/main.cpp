@@ -30,9 +30,9 @@ int main(int argc, char** argv) {
 
 	int ii, kk;
 	char filename[20];
-	Mat avIM = Mat::zeros(IMG_HEIGHT, IMG_WIDTH, CV_64FC3),		//max of CV_64FC3=2,147,483,647
-		stdIM = Mat::zeros(IMG_HEIGHT, IMG_WIDTH, CV_64FC3),	//2147483647 / 127 = 16,909,320 pics (that's enough)
-		tempIM ;												//result is the same while using CV_64FC3 or CV_64FC3 (long/double)
+	Mat avIM = Mat::zeros(IMG_HEIGHT, IMG_WIDTH, CV_32SC3),		//max of CV_32SC3=2,147,483,647
+		stdIM = Mat::zeros(IMG_HEIGHT, IMG_WIDTH, CV_32SC3),	//2147483647 / 127 = 16,909,320 pics (that's enough)
+		tempIM ;												//result is the same while using CV_32SC3 or CV_32SC3 (long/double)
 	
 	/*Compute Average Image*/	
 	percentage = 0.0;
@@ -48,7 +48,7 @@ int main(int argc, char** argv) {
 		
 		tempIM = imread(fullname.c_str());
 		if (tempIM.empty()) { cout << "Can't open image!\n"; return -1; }
-		tempIM.convertTo(tempIM, CV_64FC3);			//convert to the same type as result Mat for adding
+		tempIM.convertTo(tempIM, CV_32SC3);			//convert to the same type as result Mat for adding
 		//cout << tempIM << endl;
 
 		avIM += tempIM;
@@ -83,7 +83,7 @@ int main(int argc, char** argv) {
 
 		tempIM = imread(fullname.c_str());
 		if (tempIM.empty()) { cout << "Can't open image!\n"; return -1; }
-		tempIM.convertTo(tempIM, CV_64FC3);			//convert to the same type as result Mat for adding
+		tempIM.convertTo(tempIM, CV_32SC3);			//convert to the same type as result Mat for adding
 		//cout << tempIM << endl;
 
 		tempIM = tempIM - avIM;
