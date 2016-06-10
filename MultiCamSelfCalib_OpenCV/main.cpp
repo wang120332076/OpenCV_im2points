@@ -14,7 +14,19 @@ using namespace std;
 
 int main(int argc, char** argv) {
 
-	if (argc < 4) return -1;
+	int startnum, interval, endnum, totalnum = 0;
+	double t = 0.0, percentage;
+
+	if (argc < 7) {
+		cout << "Not enough parameters!" << endl;
+		return -1;
+	}
+	else if (argc == 7) {
+		startnum = atoi(argv[4]);
+		interval = atoi(argv[5]);
+		endnum = atoi(argv[6]);
+	}
+	totalnum = ((endnum - startnum) / interval + 1);
 
 	int ii, kk;
 	char filename[20];
@@ -22,9 +34,13 @@ int main(int argc, char** argv) {
 		stdIM = Mat::zeros(IMG_HEIGHT, IMG_WIDTH, CV_64FC3),	//2147483647 / 127 = 16,909,320 pics (that's enough)
 		tempIM ;												//result is the same while using CV_64FC3 or CV_64FC3 (long/double)
 	
-	/*Compute Average Image*/
+	/*Compute Average Image*/	
+	percentage = 0.0;
 	kk = 0;
-	for (ii = START_NUM; ii <= END_NUM; ii += INTERVAL) {
+	cout << "Computing average image:       ";
+
+	t = (double)getTickCount();
+	for (ii = startnum; ii <= endnum; ii += interval) {
 		string fullname = argv[1];
 		sprintf(filename, "\\%d.png", ii);
 		fullname.append(filename);
@@ -38,16 +54,28 @@ int main(int argc, char** argv) {
 		avIM += tempIM;
 		++kk;
 
-		if (0 == (kk % 100)) {			//print a dot every 100 images
-			cout << '.';
-		}
+		percentage = (double)kk / (double)totalnum;
+		printf("\b\b\b\b\b\b%5.1f%%", percentage* 100.0);
+
+		//if (0 == (kk % 100)) {			//print a dot every 100 images
+		//	cout << '.';
+		//}
 	}
-	avIM = avIM * (double)(1.0 / kk);	//multiply (1 / total number of images)
-	cout << "\nAverage Computed!" << endl;
+	avIM = avIM * (double)(1.0 / kk);		//multiply (1 / total number of images)
+
+	t = ((double)getTickCount() - t) / getTickFrequency();
+
+	cout << ".......Done!" << endl;
+	cout << "Elapsed time for computing average image: ";
+	printf("%.2f s\n\n", t);
 
 	/*Compute Standard Deviation Image*/
+	percentage = 0.0;
 	kk = 0;
-	for (ii = START_NUM; ii <= END_NUM; ii += INTERVAL) {
+	cout << "Computing standard deviation image:       ";
+
+	t = (double)getTickCount();
+	for (ii = startnum; ii <= endnum; ii += interval) {
 		string fullname = argv[1];
 		sprintf(filename, "\\%d.png", ii);
 		fullname.append(filename);
@@ -64,13 +92,23 @@ int main(int argc, char** argv) {
 		stdIM += tempIM;
 		++kk;
 
-		if (0 == (kk % 100)) {			//print a dot every 100 images
-			cout << '.';
-		}
+		percentage = (double)kk / (double)totalnum;
+		printf("\b\b\b\b\b\b%5.1f%%", percentage * 100.0);
+
+		//if (0 == (kk % 100)) {			//print a dot every 100 images
+		//	cout << '.';
+		//}
 	}
-	cout << "\nStandard Deviation Computed!" << endl;
+	
 	stdIM = stdIM * (double)(1.0 / (kk - 1));
 	sqrt(stdIM, stdIM);
+	stdIM = stdIM + Scalar(0.5, 0.5, 0.5);		//round function
+
+	t = ((double)getTickCount() - t) / getTickFrequency();
+
+	cout << ".......Done!" << endl;
+	cout << "Elapsed time for computing standard deviation image: ";
+	printf("%.2f s\n", t);
 
 	avIM.convertTo(avIM, CV_8UC3);				//convert back to 8-bit depth to show&save
 	stdIM.convertTo(stdIM, CV_8UC3);
